@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>متجري</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<script src="./config.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap');
+*{box-sizing:border-box;} body{margin:0;background:#F2F6FC;}
+body,button,input,textarea{font-family:'Tajawal',system-ui,'Segoe UI',Tahoma,sans-serif;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(26px);}to{opacity:1;transform:none;}}
+@keyframes scaleIn{from{opacity:0;transform:scale(.82);}to{opacity:1;transform:scale(1);}}
+@keyframes slideUp{from{transform:translateY(120%);}to{transform:translateY(0);}}
+@keyframes pop{0%{transform:scale(1);}50%{transform:scale(1.14);}100%{transform:scale(1);}}
+.reveal{opacity:0;}.reveal.in{animation:fadeUp .75s cubic-bezier(.2,.7,.2,1) forwards;}
+.stagger.in>*{opacity:0;animation:fadeUp .6s cubic-bezier(.2,.7,.2,1) forwards;}
+.stagger.in>*:nth-child(1){animation-delay:.05s}.stagger.in>*:nth-child(2){animation-delay:.12s}
+.stagger.in>*:nth-child(3){animation-delay:.19s}.stagger.in>*:nth-child(4){animation-delay:.26s}.stagger.in>*:nth-child(5){animation-delay:.33s}
+.btn{transition:transform .22s cubic-bezier(.2,.7,.2,1),box-shadow .22s,background .2s;}
+.btn:hover{transform:translateY(-2px);}.btn:active{transform:translateY(0) scale(.985);}
+.card{transition:transform .3s cubic-bezier(.2,.7,.2,1),box-shadow .3s;}
+.card:hover{transform:translateY(-5px);box-shadow:0 18px 44px rgba(37,99,235,.16);}
+.zoom{overflow:hidden;}.zoom img{transition:transform .7s cubic-bezier(.2,.7,.2,1);}
+.card:hover .zoom img{transform:scale(1.07);}
+.thumb{transition:border-color .2s,transform .2s;}.thumb:hover{transform:translateY(-2px);}
+.mainimg{transition:opacity .35s ease;}
+.glass{backdrop-filter:saturate(1.4) blur(10px);background:rgba(255,255,255,.82);}
+.fld{transition:border-color .2s,box-shadow .2s;}
+.fld:focus{border-color:#2563EB!important;box-shadow:0 0 0 4px rgba(37,99,235,.14);}
+.rowline{transition:background .15s;}.rowline:hover{background:#E8F0FE;}
+.mobilebar{animation:slideUp .4s cubic-bezier(.2,.7,.2,1);}
+.shine{position:relative;overflow:hidden;}
+.shine::after{content:"";position:absolute;top:0;left:-60%;width:40%;height:100%;background:linear-gradient(120deg,transparent,rgba(255,255,255,.4),transparent);transform:skewX(-20deg);transition:left .6s;}
+.shine:hover::after{left:130%;}
+@media(min-width:880px){.lg2{grid-template-columns:minmax(0,1fr) minmax(0,1fr);}.sticky-lg{position:sticky;top:86px;}.hide-lg{display:none;}}
+@media(max-width:879px){.only-lg{display:none;}}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel" data-presets="react">
+const { useState, useEffect, useMemo, useRef } = React;
+const CFG = window.STORE_CONFIG;
+const CONFIGURED = CFG && CFG.SUPABASE_URL && CFG.SUPABASE_URL.indexOf("http")===0 && CFG.SUPABASE_URL.indexOf("PUT_YOUR")<0 && CFG.SUPABASE_KEY && CFG.SUPABASE_KEY.indexOf("PUT_YOUR")<0;
+let sb = null;
+if (CONFIGURED) { try { sb = supabase.createClient(CFG.SUPABASE_URL, CFG.SUPABASE_KEY); } catch(e){ console.error(e); } }
+const C = { bg:"#F2F6FC", surface:"#FFFFFF", ink:"#0E1B33", sub:"#33415C", muted:"#78859E", border:"#E1E8F3", line:"#EDF1F8",
+  accent:"#2563EB", accentD:"#1D4ED8", accentGrad:"linear-gradient(135deg,#3B82F6,#1D4ED8)", blueBg:"#E8F0FE",
+  teal:"#0EA5A0", tealGrad:"linear-gradient(135deg,#14B8A6,#0E9488)", tealBg:"#E6F7F5", gold:"#E3A008", red:"#E23D3D" };
+const CITIES = ["الدار البيضاء","الرباط","فاس","مراكش","طنجة","مكناس","أكادير","وجدة","القنيطرة","تطوان","سلا","المحمدية","الجديدة","بني ملال","الناظور","تازة","سطات","خريبكة","العرائش","برشيد","خنيفرة","الرشيدية","ورزازات","الصويرة","آسفي","تمارة","تارودانت","الحسيمة","شفشاون","العيون","الداخلة","تيزنيت","القصر الكبير","سيدي سليمان","سيدي قاسم","بركان","وزان","صفرو","تيزنيت","زاكورة","مرتيل","الفنيدق","المضيق","بوزنيقة","أصيلة"];
+const money = (n)=>`${Number(n||0).toLocaleString("fr-MA")} د.م.`;
+
+function norm(p){ return { ...p,
+  images: Array.isArray(p.images)?p.images:[],
+  long_images: Array.isArray(p.long_images)?p.long_images:[],
+  benefits: Array.isArray(p.benefits)?p.benefits:[],
+  oldPrice: Number(p.old_price)||0, rating:Number(p.rating)||5, reviews:Number(p.reviews)||0, sold:Number(p.sold)||0 }; }
+
+async function loadProducts(){ const {data,error}=await sb.from("products").select("*").order("created_at",{ascending:false}); if(error){console.error(error);return[];} return (data||[]).map(norm); }
+async function insertOrder(o){ const {error}=await sb.from("orders").insert(o); if(error) throw error; }
+
+function Reveal({children,className="",style={},delay=0,tag:Tag="div"}){
+  const ref=useRef(null),[seen,setSeen]=useState(false);
+  useEffect(()=>{const el=ref.current;if(!el)return;const ob=new IntersectionObserver(([e])=>{if(e.isIntersecting){setSeen(true);ob.disconnect();}},{threshold:.12});ob.observe(el);return()=>ob.disconnect();},[]);
+  return <Tag ref={ref} className={`reveal ${seen?"in":""} ${className}`} style={{animationDelay:`${delay}s`,...style}}>{children}</Tag>;
+}
+function Stars({rating,reviews,small}){const full=Math.round(rating);return(
+  <div style={{display:"flex",alignItems:"center",gap:7}}>
+    <span style={{color:C.gold,fontSize:small?14:17,letterSpacing:1}}>{"★".repeat(full)}<span style={{color:"#D8DEEA"}}>{"★".repeat(5-full)}</span></span>
+    <span style={{color:C.muted,fontSize:small?12:13.5}}>{rating} · {reviews} تقييم</span>
+  </div>);}
+
+function SetupNotice({BRAND}){
+  return (<div style={{minHeight:"100vh",display:"flex",alignItems:"center",justifyContent:"center",padding:20,background:C.bg,fontFamily:"'Tajawal',sans-serif"}}>
+    <div style={{maxWidth:470,background:"#fff",border:`1px solid ${C.border}`,borderRadius:20,padding:30,textAlign:"center",boxShadow:"0 16px 40px rgba(14,27,51,.08)"}}>
+      <div style={{fontSize:46}}>⚙️</div>
+      <h1 style={{fontSize:21,fontWeight:900,margin:"12px 0 8px",color:C.ink}}>الموقع مازال غير مربوط</h1>
+      <p style={{color:C.sub,lineHeight:1.9,fontSize:15,margin:0}}>باش يخدم، خاصك تعمّر مفاتيح <b>Supabase</b> ف الملف <b>config.js</b>:</p>
+      <div style={{textAlign:"left",background:C.blueBg,borderRadius:12,padding:14,fontSize:12.5,color:C.ink,marginTop:14,direction:"ltr",fontFamily:"monospace",lineHeight:1.7}}>SUPABASE_URL: "https://xxx.supabase.co"<br/>SUPABASE_KEY: "sb_publishable_xxx"</div>
+      <p style={{color:C.muted,fontSize:13,marginTop:14,marginBottom:0}}>من Supabase → Connect (أو Settings → API Keys)</p>
+    </div>
+  </div>);
+}
+
+function App(){
+  const [view,setView]=useState("home");
+  const [pid,setPid]=useState(null);
+  const [products,setProducts]=useState([]);
+  const [loading,setLoading]=useState(true);
+  useEffect(()=>{(async()=>{setProducts(await loadProducts());setLoading(false);})();},[]);
+  const go=(v,id=null)=>{setView(v);setPid(id);window.scrollTo({top:0});};
+  const BRAND=CFG.BRAND||"متجري";
+
+  if(!sb) return <SetupNotice BRAND={BRAND}/>;
+
+  return (
+    <div style={{background:C.bg,minHeight:"100vh",color:C.ink}}>
+      <header className="glass" style={{position:"sticky",top:0,zIndex:40,borderBottom:`1px solid ${C.line}`}}>
+        <div style={{maxWidth:1140,margin:"0 auto",padding:"13px 18px",display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+          <button onClick={()=>go("home")} style={{border:"none",background:"none",cursor:"pointer",display:"flex",alignItems:"center",gap:9}}>
+            <span style={{width:32,height:32,borderRadius:9,background:C.accentGrad,color:"#fff",display:"inline-flex",alignItems:"center",justifyContent:"center",fontWeight:900,fontSize:17,boxShadow:"0 4px 12px rgba(37,99,235,.35)"}}>{BRAND.slice(0,1)}</span>
+            <span style={{fontSize:21,fontWeight:800,letterSpacing:-0.3}}>{BRAND}</span>
+          </button>
+          <div style={{display:"flex",gap:16,fontSize:12.5,color:C.muted,fontWeight:500}} className="only-lg">
+            <span>🚚 توصيل لكل المغرب</span><span style={{color:C.teal,fontWeight:700}}>💳 الدفع عند الاستلام</span>
+          </div>
+        </div>
+      </header>
+      {loading ? <div style={{padding:"80px 0",textAlign:"center",color:C.muted}}>جاري التحميل…</div>
+        : view==="home" ? <Home products={products} go={go}/> : <Landing product={products.find(p=>p.id===pid)} go={go}/>}
+      <footer style={{borderTop:`1px solid ${C.line}`,marginTop:56,padding:"28px 18px",textAlign:"center",color:C.muted,fontSize:13}}>{BRAND} © 2026 — صُنع بعناية في المغرب</footer>
+    </div>
+  );
+}
+
+function Home({products,go}){
+  return (
+    <div style={{maxWidth:1140,margin:"0 auto",padding:"34px 18px"}}>
+      <Reveal>
+        <p style={{color:C.accent,fontWeight:800,letterSpacing:1,fontSize:13,margin:0}}>تشكيلتنا</p>
+        <h1 style={{fontSize:34,fontWeight:900,margin:"6px 0 4px",letterSpacing:-0.6}}>منتجات مختارة بعناية</h1>
+        <p style={{color:C.muted,margin:"0 0 26px",fontSize:16}}>اطلب بكل سهولة — الدفع عند الاستلام في كل المغرب</p>
+      </Reveal>
+      {products.length===0 ? <div style={{background:"#fff",border:`1.5px dashed ${C.border}`,borderRadius:20,padding:50,textAlign:"center",color:C.muted}}>لا توجد منتجات حالياً.</div>
+      : <Reveal className="stagger" style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(240px,1fr))",gap:20}}>
+        {products.map(p=>{const off=p.oldPrice>p.price?Math.round((1-p.price/p.oldPrice)*100):0;return(
+          <div key={p.id} className="card" onClick={()=>go("product",p.id)} style={{background:C.surface,border:`1px solid ${C.border}`,borderRadius:20,overflow:"hidden",cursor:"pointer"}}>
+            <div className="zoom" style={{position:"relative"}}>
+              {p.images[0]?<img src={p.images[0]} alt={p.name} style={{width:"100%",height:240,objectFit:"cover",display:"block"}}/>:<div style={{height:240,background:"#EDF1F8"}}/>}
+              {off>0&&<span style={{position:"absolute",top:12,insetInlineStart:12,background:C.ink,color:"#fff",fontWeight:800,fontSize:12,padding:"5px 11px",borderRadius:30}}>-{off}%</span>}
+            </div>
+            <div style={{padding:16}}>
+              <h3 style={{fontWeight:800,fontSize:17,margin:"0 0 5px",letterSpacing:-0.3}}>{p.name}</h3>
+              <Stars rating={p.rating} reviews={p.reviews} small/>
+              <div style={{display:"flex",alignItems:"baseline",gap:8,marginTop:10}}>
+                <span style={{fontWeight:900,fontSize:20,color:C.ink}}>{money(p.price)}</span>
+                {off>0&&<span style={{color:C.muted,textDecoration:"line-through",fontSize:13}}>{money(p.oldPrice)}</span>}
+              </div>
+              <button className="btn shine" style={{marginTop:13,width:"100%",background:C.accentGrad,color:"#fff",border:"none",borderRadius:12,padding:"12px",fontWeight:800,fontSize:15,cursor:"pointer",boxShadow:"0 8px 18px rgba(37,99,235,.28)"}}>اطلب الآن</button>
+            </div>
+          </div>);})}
+      </Reveal>}
+    </div>
+  );
+}
+
+function Landing({product,go}){
+  const [main,setMain]=useState(0),[fade,setFade]=useState(false),[qty,setQty]=useState(1);
+  const [form,setForm]=useState({name:"",phone:"",city:"",address:""});
+  const [cityOpen,setCityOpen]=useState(false),[errors,setErrors]=useState({}),[done,setDone]=useState(false),[sending,setSending]=useState(false);
+  const formRef=useRef(null);
+  if(!product) return <div style={{padding:40}}>—</div>;
+  const off=product.oldPrice>product.price?Math.round((1-product.price/product.oldPrice)*100):0;
+  const total=product.price*qty;
+  const swap=(i)=>{if(i===main)return;setFade(true);setTimeout(()=>{setMain(i);setFade(false);},180);};
+  const cityMatches=useMemo(()=>{const q=form.city.trim();return(q?CITIES.filter(c=>c.includes(q)):CITIES).slice(0,10);},[form.city]);
+  const scrollForm=()=>formRef.current?.scrollIntoView({behavior:"smooth",block:"center"});
+  const submit=async()=>{
+    const e={};
+    if(!form.name.trim())e.name="المرجو إدخال الاسم الكامل";
+    if(form.phone.replace(/\D/g,"").length<10)e.phone="رقم هاتف غير صحيح (10 أرقام)";
+    if(!CITIES.includes(form.city.trim()))e.city="المرجو اختيار المدينة";
+    if(!form.address.trim())e.address="المرجو إدخال العنوان";
+    setErrors(e); if(Object.keys(e).length){scrollForm();return;}
+    setSending(true);
+    try{ await insertOrder({name:form.name.trim(),phone:form.phone.trim(),city:form.city.trim(),address:form.address.trim(),
+      items:[{id:product.id,name:product.name,price:product.price,qty,image:product.images[0]||""}],total,status:"new"});
+      setDone(true);window.scrollTo({top:0,behavior:"smooth"});
+    }catch(err){alert("خطأ: "+err.message);}
+    setSending(false);
+  };
+  const fld=(bad)=>({width:"100%",padding:"14px 15px",borderRadius:13,border:`1.5px solid ${bad?C.red:C.border}`,fontSize:15,outline:"none",background:"#fff"});
+  const lab={display:"block",fontWeight:700,fontSize:13.5,marginBottom:7,color:C.sub};
+
+  if(done) return (
+    <div style={{maxWidth:560,margin:"0 auto",padding:"64px 18px",textAlign:"center"}}>
+      <div style={{width:88,height:88,borderRadius:"50%",background:C.tealGrad,color:"#fff",display:"inline-flex",alignItems:"center",justifyContent:"center",fontSize:46,marginBottom:20,animation:"scaleIn .5s cubic-bezier(.2,.7,.2,1)",boxShadow:"0 12px 30px rgba(14,165,160,.4)"}}>✓</div>
+      <h1 style={{fontSize:27,fontWeight:900}}>تم تسجيل طلبك!</h1>
+      <p style={{color:C.muted,fontSize:16,margin:"10px 0 6px"}}>غادي نتواصلو معاك قريباً لتأكيد الطلب.</p>
+      <p style={{fontWeight:800,fontSize:17}}>{product.name} × {qty} — {money(total)}</p>
+      <button onClick={()=>go("home")} className="btn" style={{marginTop:24,background:C.ink,color:"#fff",border:"none",borderRadius:14,padding:"13px 26px",fontWeight:800,cursor:"pointer"}}>متابعة التسوق</button>
+    </div>);
+
+  return (
+    <div style={{maxWidth:1140,margin:"0 auto",padding:"16px 18px 90px"}}>
+      <button onClick={()=>go("home")} style={{background:"none",border:"none",color:C.muted,cursor:"pointer",fontSize:14,marginBottom:14,fontWeight:600}}>‹ رجوع للمنتجات</button>
+      <div className="lg2" style={{display:"grid",gap:30,gridTemplateColumns:"1fr",alignItems:"start"}}>
+        <div className="sticky-lg">
+          <Reveal className="zoom" style={{borderRadius:22,position:"relative",border:`1px solid ${C.border}`}}>
+            {product.images[main]?<img className="mainimg" src={product.images[main]} alt={product.name} style={{width:"100%",height:470,objectFit:"cover",display:"block",opacity:fade?0:1}}/>:<div style={{height:470,background:"#EDF1F8"}}/>}
+            {off>0&&<span style={{position:"absolute",top:16,insetInlineStart:16,background:C.accentGrad,color:"#fff",fontWeight:800,fontSize:14,padding:"7px 14px",borderRadius:30,boxShadow:"0 6px 16px rgba(37,99,235,.4)"}}>خصم {off}%</span>}
+          </Reveal>
+          {product.images.length>1&&<div style={{display:"flex",gap:11,marginTop:13,flexWrap:"wrap"}}>
+            {product.images.map((s,i)=><img key={i} className="thumb" src={s} onClick={()=>swap(i)} alt="" style={{width:80,height:80,objectFit:"cover",borderRadius:14,cursor:"pointer",border:i===main?`2.5px solid ${C.accent}`:`1.5px solid ${C.border}`}}/>)}
+          </div>}
+        </div>
+        <div>
+          <Reveal delay={0.05}>
+            {product.sold>0&&<span style={{display:"inline-block",background:C.tealBg,color:C.teal,fontWeight:800,fontSize:12.5,padding:"5px 12px",borderRadius:30,marginBottom:12}}>🔥 تم بيع {product.sold}+ قطعة</span>}
+            <h1 style={{fontSize:30,fontWeight:900,margin:"0 0 6px",lineHeight:1.25,letterSpacing:-0.6}}>{product.name}</h1>
+            {product.tagline&&<p style={{color:C.muted,fontSize:16,margin:"0 0 12px"}}>{product.tagline}</p>}
+            <Stars rating={product.rating} reviews={product.reviews}/>
+          </Reveal>
+          <Reveal delay={0.1} style={{display:"flex",alignItems:"baseline",gap:12,margin:"18px 0"}}>
+            <span style={{fontSize:36,fontWeight:900,color:C.ink,letterSpacing:-1}}>{money(product.price)}</span>
+            {off>0&&<span style={{color:C.muted,textDecoration:"line-through",fontSize:18}}>{money(product.oldPrice)}</span>}
+            {off>0&&<span style={{background:C.blueBg,color:C.accentD,fontWeight:800,fontSize:13,padding:"4px 11px",borderRadius:9}}>وفّر {off}%</span>}
+          </Reveal>
+          {product.benefits.length>0&&<Reveal delay={0.14} className="stagger" tag="ul" style={{listStyle:"none",padding:0,margin:"0 0 22px",display:"grid",gap:11}}>
+            {product.benefits.map((b,i)=><li key={i} style={{display:"flex",alignItems:"flex-start",gap:11,fontSize:15.5}}>
+              <span style={{width:22,height:22,borderRadius:"50%",background:C.blueBg,color:C.accent,display:"inline-flex",alignItems:"center",justifyContent:"center",fontWeight:900,fontSize:12,flexShrink:0,marginTop:1}}>✓</span>
+              <span style={{color:C.sub}}>{b}</span></li>)}
+          </Reveal>}
+          <Reveal delay={0.18} style={{display:"flex",alignItems:"center",gap:14,marginBottom:16}}>
+            <span style={{fontWeight:700,color:C.sub}}>الكمية</span>
+            <div style={{display:"flex",alignItems:"center",border:`1.5px solid ${C.border}`,borderRadius:14,overflow:"hidden",background:"#fff"}}>
+              <button onClick={()=>setQty(q=>Math.max(1,q-1))} className="btn" style={{border:"none",background:"#fff",width:44,height:46,fontSize:22,cursor:"pointer",color:C.ink}}>−</button>
+              <span key={qty} style={{width:48,textAlign:"center",fontWeight:900,fontSize:18,animation:"pop .25s"}}>{qty}</span>
+              <button onClick={()=>setQty(q=>q+1)} className="btn" style={{border:"none",background:"#fff",width:44,height:46,fontSize:22,cursor:"pointer",color:C.ink}}>+</button>
+            </div>
+          </Reveal>
+          <Reveal delay={0.22}>
+            <button onClick={scrollForm} className="btn shine" style={{width:"100%",background:C.accentGrad,color:"#fff",border:"none",borderRadius:16,padding:"17px",fontWeight:900,fontSize:18,cursor:"pointer",boxShadow:"0 12px 28px rgba(37,99,235,.35)"}}>🛒 اطلب الآن — الدفع عند الاستلام</button>
+            <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:9,marginTop:16}}>
+              {[["🚚","توصيل سريع"],["💳","الدفع عند الاستلام"],["✅","ضمان الجودة"]].map(([e,t],i)=>
+                <div key={i} style={{background:"#fff",border:`1px solid ${C.border}`,borderRadius:14,padding:"13px 6px",textAlign:"center"}}>
+                  <div style={{fontSize:22}}>{e}</div><div style={{fontSize:11.5,fontWeight:700,color:C.sub,marginTop:5}}>{t}</div></div>)}
+            </div>
+          </Reveal>
+        </div>
+      </div>
+
+      <Reveal>
+        <div ref={formRef} style={{background:C.surface,border:`1px solid ${C.border}`,borderRadius:24,padding:26,margin:"40px auto 0",maxWidth:640,boxShadow:"0 20px 50px rgba(14,27,51,.08)"}}>
+          <div style={{textAlign:"center"}}>
+            <span style={{background:C.ink,color:"#fff",fontWeight:800,fontSize:12.5,padding:"6px 16px",borderRadius:30}}>عمّر المعلومات 👇</span>
+            <h2 style={{fontSize:24,fontWeight:900,margin:"14px 0 22px",letterSpacing:-0.4}}>معلومات الطلب</h2>
+          </div>
+          <div style={{marginBottom:15}}><label style={lab}>الاسم الكامل *</label>
+            <input className="fld" style={fld(errors.name)} placeholder="الاسم و النسب" value={form.name} onChange={e=>setForm({...form,name:e.target.value})}/>
+            {errors.name&&<p style={{color:C.red,fontSize:13,margin:"6px 0 0"}}>{errors.name}</p>}</div>
+          <div style={{marginBottom:15}}><label style={lab}>رقم الهاتف *</label>
+            <input className="fld" style={{...fld(errors.phone),direction:"ltr",textAlign:"right"}} placeholder="06xxxxxxxx" inputMode="tel" value={form.phone} onChange={e=>setForm({...form,phone:e.target.value.replace(/[^\d+\s]/g,"")})}/>
+            {errors.phone&&<p style={{color:C.red,fontSize:13,margin:"6px 0 0"}}>{errors.phone}</p>}</div>
+          <div style={{marginBottom:15,position:"relative"}}><label style={lab}>المدينة *</label>
+            <input className="fld" style={fld(errors.city)} placeholder="اكتب اسم المدينة…" value={form.city}
+              onChange={e=>{setForm({...form,city:e.target.value});setCityOpen(true);}} onFocus={()=>setCityOpen(true)} onBlur={()=>setTimeout(()=>setCityOpen(false),150)}/>
+            {cityOpen&&cityMatches.length>0&&<div style={{position:"absolute",top:"100%",insetInlineStart:0,insetInlineEnd:0,zIndex:20,marginTop:5,background:"#fff",border:`1px solid ${C.border}`,borderRadius:14,boxShadow:"0 16px 36px rgba(14,27,51,.14)",maxHeight:220,overflowY:"auto",padding:5}}>
+              {cityMatches.map(c=><button key={c} className="rowline" onMouseDown={()=>{setForm({...form,city:c});setCityOpen(false);}} style={{display:"block",width:"100%",textAlign:"right",background:"none",border:"none",padding:"11px 12px",cursor:"pointer",fontSize:15,borderRadius:9}}>{c}</button>)}
+            </div>}
+            {errors.city&&<p style={{color:C.red,fontSize:13,margin:"6px 0 0"}}>{errors.city}</p>}</div>
+          <div style={{marginBottom:20}}><label style={lab}>العنوان *</label>
+            <textarea className="fld" rows={2} style={{...fld(errors.address),resize:"vertical"}} placeholder="الحي، الزنقة، رقم المنزل…" value={form.address} onChange={e=>setForm({...form,address:e.target.value})}/>
+            {errors.address&&<p style={{color:C.red,fontSize:13,margin:"6px 0 0"}}>{errors.address}</p>}</div>
+          <div style={{background:C.bg,borderRadius:15,padding:16,marginBottom:18}}>
+            <div style={{display:"flex",justifyContent:"space-between",fontSize:14.5,marginBottom:7}}><span style={{color:C.muted}}>{product.name} × {qty}</span><span style={{fontWeight:700}}>{money(total)}</span></div>
+            <div style={{display:"flex",justifyContent:"space-between",fontSize:14.5,marginBottom:9}}><span style={{color:C.muted}}>التوصيل</span><span style={{color:C.teal,fontWeight:700}}>مجاني</span></div>
+            <div style={{display:"flex",justifyContent:"space-between",borderTop:`1px dashed ${C.border}`,paddingTop:10}}><span style={{fontWeight:900,fontSize:17}}>المجموع</span><span style={{fontWeight:900,fontSize:21,color:C.accent}}>{money(total)}</span></div>
+          </div>
+          <button onClick={submit} disabled={sending} className="btn shine" style={{width:"100%",background:C.tealGrad,color:"#fff",border:"none",borderRadius:16,padding:"17px",fontWeight:900,fontSize:18,cursor:"pointer",boxShadow:"0 12px 26px rgba(14,165,160,.32)",opacity:sending?.7:1}}>{sending?"جاري الإرسال…":"✅ تأكيد الطلب"}</button>
+          <p style={{textAlign:"center",color:C.muted,fontSize:12.5,marginTop:11}}>🔒 الدفع عند الاستلام — بلا خلاص مسبق</p>
+        </div>
+      </Reveal>
+
+      {product.description&&<div style={{maxWidth:840,margin:"46px auto 0"}}>
+        <Reveal>
+          <h2 style={{fontSize:23,fontWeight:900,marginBottom:14,borderInlineStart:`4px solid ${C.accent}`,paddingInlineStart:13}}>تفاصيل المنتج</h2>
+          <p style={{color:C.sub,lineHeight:2,whiteSpace:"pre-wrap",fontSize:16.5}}>{product.description}</p>
+        </Reveal>
+        {product.long_images.map((s,i)=><Reveal key={i} className="zoom" style={{borderRadius:18,marginTop:18,border:`1px solid ${C.border}`}}><img src={s} alt="" style={{width:"100%",display:"block"}}/></Reveal>)}
+      </div>}
+
+      <div className="mobilebar hide-lg" style={{position:"fixed",insetInline:0,bottom:0,zIndex:50,background:"rgba(255,255,255,.94)",backdropFilter:"blur(10px)",borderTop:`1px solid ${C.border}`,padding:"10px 16px",display:"flex",alignItems:"center",gap:12}}>
+        <div style={{flex:1}}><div style={{fontWeight:900,fontSize:18,color:C.accent,lineHeight:1}}>{money(product.price)}</div>{off>0&&<div style={{color:C.muted,textDecoration:"line-through",fontSize:12}}>{money(product.oldPrice)}</div>}</div>
+        <button onClick={scrollForm} className="btn shine" style={{background:C.accentGrad,color:"#fff",border:"none",borderRadius:13,padding:"13px 22px",fontWeight:900,fontSize:15.5,cursor:"pointer"}}>اطلب الآن</button>
+      </div>
+    </div>
+  );
+}
+ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
+</script>
+</body>
+</html>

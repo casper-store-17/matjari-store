@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>لوحة التحكم — متجري</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<script src="./config.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap');
+*{box-sizing:border-box;} body{margin:0;background:#F2F6FC;}
+body,button,input,textarea{font-family:'Tajawal',system-ui,'Segoe UI',Tahoma,sans-serif;}
+.btn{transition:transform .18s,box-shadow .18s,background .2s;} .btn:hover{transform:translateY(-1px);} .btn:active{transform:scale(.98);}
+.fld:focus{border-color:#2563EB!important;box-shadow:0 0 0 4px rgba(37,99,235,.14);outline:none;}
+@media(min-width:640px){.g2{grid-template-columns:repeat(2,1fr);}}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel" data-presets="react">
+const { useState, useEffect } = React;
+const CFG = window.STORE_CONFIG;
+const CONFIGURED = CFG && CFG.SUPABASE_URL && CFG.SUPABASE_URL.indexOf("http")===0 && CFG.SUPABASE_URL.indexOf("PUT_YOUR")<0 && CFG.SUPABASE_KEY && CFG.SUPABASE_KEY.indexOf("PUT_YOUR")<0;
+let sb = null;
+if (CONFIGURED) { try { sb = supabase.createClient(CFG.SUPABASE_URL, CFG.SUPABASE_KEY); } catch(e){ console.error(e); } }
+const C = { bg:"#F2F6FC", surface:"#FFFFFF", ink:"#0E1B33", sub:"#33415C", muted:"#78859E", border:"#E1E8F3", line:"#EDF1F8",
+  accent:"#2563EB", accentGrad:"linear-gradient(135deg,#3B82F6,#1D4ED8)", teal:"#0EA5A0", red:"#E23D3D", accentBg:"#E8F0FE" };
+const money=(n)=>`${Number(n||0).toLocaleString("fr-MA")} د.م.`;
+const arr=(x)=>Array.isArray(x)?x:[];
+
+async function fetchProducts(){const {data,error}=await sb.from("products").select("*").order("created_at",{ascending:false});if(error){console.error(error);return[];}return data||[];}
+async function fetchOrders(){const {data,error}=await sb.from("orders").select("*").order("created_at",{ascending:false});if(error){console.error(error);return[];}return data||[];}
+async function uploadImage(file){
+  const ext=(file.name.split(".").pop()||"jpg").toLowerCase();
+  const path=`${Date.now()}-${Math.random().toString(36).slice(2,8)}.${ext}`;
+  const {error}=await sb.storage.from("product-images").upload(path,file,{cacheControl:"3600",upsert:false});
+  if(error) throw error;
+  return sb.storage.from("product-images").getPublicUrl(path).data.publicUrl;
+}
+
+function SetupNotice({BRAND}){
+  const T={ink:"#0E1B33",sub:"#33415C",muted:"#78859E",border:"#E1E8F3",bg:"#F2F6FC",blueBg:"#E8F0FE"};
+  return (<div style={{minHeight:"100vh",display:"flex",alignItems:"center",justifyContent:"center",padding:20,background:T.bg,fontFamily:"'Tajawal',sans-serif"}}>
+    <div style={{maxWidth:470,background:"#fff",border:`1px solid ${T.border}`,borderRadius:20,padding:30,textAlign:"center",boxShadow:"0 16px 40px rgba(14,27,51,.08)"}}>
+      <div style={{fontSize:46}}>⚙️</div>
+      <h1 style={{fontSize:21,fontWeight:900,margin:"12px 0 8px",color:T.ink}}>لوحة التحكم مازال غير مربوطة</h1>
+      <p style={{color:T.sub,lineHeight:1.9,fontSize:15,margin:0}}>عمّر مفاتيح <b>Supabase</b> ف الملف <b>config.js</b>:</p>
+      <div style={{textAlign:"left",background:T.blueBg,borderRadius:12,padding:14,fontSize:12.5,color:T.ink,marginTop:14,direction:"ltr",fontFamily:"monospace",lineHeight:1.7}}>SUPABASE_URL: "https://xxx.supabase.co"<br/>SUPABASE_KEY: "sb_publishable_xxx"</div>
+      <p style={{color:T.muted,fontSize:13,marginTop:14,marginBottom:0}}>من Supabase → Connect (أو Settings → API Keys)</p>
+    </div>
+  </div>);
+}
+
+function App(){
+  const [session,setSession]=useState(null),[ready,setReady]=useState(false);
+  const [tab,setTab]=useState("products");
+  const [products,setProducts]=useState([]),[orders,setOrders]=useState([]);
+  const [editing,setEditing]=useState(null),[uploading,setUploading]=useState(false);
+  const [email,setEmail]=useState(""),[pwd,setPwd]=useState(""),[loginErr,setLoginErr]=useState("");
+  const BRAND=CFG.BRAND||"متجري";
+
+  useEffect(()=>{if(!sb){setReady(true);return;}sb.auth.getSession().then(({data})=>{setSession(data.session);setReady(true);});
+    const {data:sub}=sb.auth.onAuthStateChange((_e,s)=>setSession(s));return()=>sub.subscription.unsubscribe();},[]);
+  useEffect(()=>{if(session)refreshAll();},[session]);
+  const refreshAll=async()=>{setProducts(await fetchProducts());setOrders(await fetchOrders());};
+
+  const btn=(bg,ex={})=>({background:bg,color:"#fff",border:"none",borderRadius:12,padding:"11px 18px",fontWeight:800,cursor:"pointer",fontSize:15,...ex});
+  const ghost={background:"#fff",color:C.accent,border:`1.5px solid ${C.border}`,borderRadius:12,padding:"10px 16px",fontWeight:700,cursor:"pointer",fontSize:14};
+  const inp={width:"100%",padding:"12px 14px",borderRadius:12,border:`1.5px solid ${C.border}`,fontSize:15,background:"#fff",color:C.ink,outline:"none"};
+  const lab={display:"block",fontWeight:700,fontSize:14,marginBottom:6,color:C.sub};
+
+  const doLogin=async()=>{setLoginErr("");const {error}=await sb.auth.signInWithPassword({email:email.trim(),password:pwd});if(error)setLoginErr("البريد أو كلمة السر غير صحيحة");};
+
+  if(!sb) return <SetupNotice BRAND={BRAND}/>;
+
+  if(!ready) return <div style={{minHeight:"100vh",display:"flex",alignItems:"center",justifyContent:"center",color:C.muted}}>جاري التحميل…</div>;
+
+  if(!session) return (
+    <div style={{minHeight:"100vh",background:C.bg}}>
+      <header style={{background:C.accentGrad,color:"#fff",padding:"14px 18px"}}><div style={{maxWidth:1100,margin:"0 auto",fontSize:20,fontWeight:900}}>{BRAND} · لوحة التحكم</div></header>
+      <div style={{maxWidth:400,margin:"0 auto",padding:"64px 18px"}}>
+        <div style={{background:"#fff",border:`1px solid ${C.border}`,borderRadius:20,padding:28,boxShadow:"0 16px 40px rgba(14,27,51,.08)"}}>
+          <h1 style={{fontSize:22,fontWeight:900,marginTop:0,marginBottom:18}}>دخول</h1>
+          <label style={lab}>البريد الإلكتروني</label>
+          <input className="fld" style={{...inp,direction:"ltr",marginBottom:14}} value={email} onChange={e=>setEmail(e.target.value)}/>
+          <label style={lab}>كلمة السر</label>
+          <input className="fld" type="password" style={{...inp,borderColor:loginErr?C.red:C.border}} value={pwd} onChange={e=>setPwd(e.target.value)} onKeyDown={e=>e.key==="Enter"&&doLogin()}/>
+          {loginErr&&<p style={{color:C.red,fontSize:13,marginTop:6}}>{loginErr}</p>}
+          <button className="btn" onClick={doLogin} style={{...btn(C.accentGrad),width:"100%",marginTop:16}}>دخول</button>
+        </div>
+      </div>
+    </div>);
+
+  const blank={id:null,name:"",tagline:"",price:"",old_price:"",description:"",images:[],long_images:[],benefitsText:"",rating:"5",reviews:"0",sold:"0"};
+  const startAdd=()=>setEditing({...blank});
+  const startEdit=(p)=>setEditing({id:p.id,name:p.name||"",tagline:p.tagline||"",price:p.price||"",old_price:p.old_price||"",description:p.description||"",images:arr(p.images),long_images:arr(p.long_images),benefitsText:arr(p.benefits).join("\n"),rating:p.rating||"5",reviews:p.reviews||"0",sold:p.sold||"0"});
+  const onFiles=async(e,key)=>{const files=Array.from(e.target.files||[]);if(!files.length)return;setUploading(true);
+    try{const urls=[];for(const f of files)urls.push(await uploadImage(f));setEditing(ed=>({...ed,[key]:[...ed[key],...urls]}));}
+    catch(err){alert("خطأ ف الرفع: "+err.message);}setUploading(false);e.target.value="";};
+  const rmImg=(key,i)=>setEditing(ed=>({...ed,[key]:ed[key].filter((_,idx)=>idx!==i)}));
+  const save=async()=>{
+    const body={name:editing.name.trim(),tagline:editing.tagline.trim(),price:Number(editing.price)||0,old_price:Number(editing.old_price)||0,
+      description:editing.description.trim(),images:editing.images,long_images:editing.long_images,
+      benefits:editing.benefitsText.split("\n").map(s=>s.trim()).filter(Boolean),
+      rating:Number(editing.rating)||5,reviews:Number(editing.reviews)||0,sold:Number(editing.sold)||0};
+    if(!body.name){alert("خاص اسم المنتج");return;}
+    let error;
+    if(editing.id){({error}=await sb.from("products").update(body).eq("id",editing.id));}
+    else {({error}=await sb.from("products").insert(body));}
+    if(error){alert("خطأ: "+error.message);return;}
+    setEditing(null);refreshAll();
+  };
+  const del=async(id)=>{if(!confirm("حذف هذا المنتج؟"))return;const {error}=await sb.from("products").delete().eq("id",id);if(error){alert(error.message);return;}refreshAll();};
+  const handle=async(id)=>{const {error}=await sb.from("orders").update({status:"handled"}).eq("id",id);if(error){alert(error.message);return;}refreshAll();};
+  const newCount=orders.filter(o=>o.status==="new").length;
+
+  const ImgRow=({list,keyName})=>(
+    <div style={{display:"flex",flexWrap:"wrap",gap:10,marginBottom:10}}>
+      {list.map((src,i)=><div key={i} style={{position:"relative"}}>
+        <img src={src} alt="" style={{width:74,height:74,objectFit:"cover",borderRadius:10,border:`1px solid ${C.border}`}}/>
+        <button onClick={()=>rmImg(keyName,i)} style={{position:"absolute",top:-8,insetInlineEnd:-8,background:C.red,color:"#fff",border:"none",borderRadius:"50%",width:22,height:22,cursor:"pointer",fontWeight:800}}>×</button>
+      </div>)}
+      <label style={{width:74,height:74,border:`1.5px dashed ${C.border}`,borderRadius:10,display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",color:C.muted,fontSize:11,textAlign:"center",padding:4}}>
+        {uploading?"…":"＋ صور"}<input type="file" accept="image/*" multiple onChange={e=>onFiles(e,keyName)} style={{display:"none"}}/>
+      </label>
+    </div>
+  );
+
+  return (
+    <div style={{minHeight:"100vh",background:C.bg,color:C.ink}}>
+      <header style={{background:C.accentGrad,color:"#fff",position:"sticky",top:0,zIndex:30,boxShadow:"0 4px 16px rgba(37,99,235,.25)"}}>
+        <div style={{maxWidth:1040,margin:"0 auto",padding:"13px 18px",display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+          <span style={{fontSize:20,fontWeight:900}}>{BRAND} <span style={{opacity:.8,fontSize:13,fontWeight:700}}>· لوحة التحكم</span></span>
+          <button onClick={()=>sb.auth.signOut()} style={{background:"rgba(255,255,255,.16)",color:"#fff",border:"1px solid rgba(255,255,255,.35)",borderRadius:10,padding:"8px 14px",fontWeight:700,cursor:"pointer"}}>خروج</button>
+        </div>
+        <div style={{maxWidth:1040,margin:"0 auto",padding:"0 18px",display:"flex",gap:4}}>
+          {[["products","المنتجات"],["orders","الطلبات"]].map(([v,l])=>
+            <button key={v} onClick={()=>setTab(v)} style={{background:"none",border:"none",cursor:"pointer",color:"#fff",fontWeight:800,fontSize:14.5,padding:"11px 14px",borderBottom:tab===v?"3px solid #fff":"3px solid transparent",opacity:tab===v?1:.75}}>{l}{v==="orders"&&newCount>0?` (${newCount})`:""}</button>)}
+        </div>
+      </header>
+
+      {tab==="products" ? (
+        <div style={{maxWidth:1040,margin:"0 auto",padding:"22px 18px"}}>
+          <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:16}}>
+            <h1 style={{fontSize:22,fontWeight:900,margin:0}}>إدارة المنتجات</h1>
+            {!editing&&<button className="btn" onClick={startAdd} style={btn(C.accentGrad)}>＋ إضافة منتج</button>}
+          </div>
+
+          {editing&&<div style={{background:"#fff",border:`1px solid ${C.border}`,borderRadius:18,padding:20,marginBottom:20,boxShadow:"0 10px 30px rgba(14,27,51,.06)"}}>
+            <h2 style={{fontWeight:900,marginTop:0,marginBottom:16}}>{editing.id?"تعديل المنتج":"منتج جديد"}</h2>
+            <div style={{display:"grid",gap:14}} className="g2">
+              <div><label style={lab}>اسم المنتج *</label><input className="fld" style={inp} value={editing.name} onChange={e=>setEditing({...editing,name:e.target.value})}/></div>
+              <div><label style={lab}>وصف قصير (tagline)</label><input className="fld" style={inp} value={editing.tagline} onChange={e=>setEditing({...editing,tagline:e.target.value})} placeholder="مثال: أناقة و راحة"/></div>
+              <div><label style={lab}>الثمن (د.م.) *</label><input className="fld" type="number" style={{...inp,direction:"ltr"}} value={editing.price} onChange={e=>setEditing({...editing,price:e.target.value})}/></div>
+              <div><label style={lab}>الثمن القديم (اختياري)</label><input className="fld" type="number" style={{...inp,direction:"ltr"}} value={editing.old_price} onChange={e=>setEditing({...editing,old_price:e.target.value})} placeholder="للخصم"/></div>
+            </div>
+            <div style={{marginTop:14}}><label style={lab}>المميزات (كل ميزة ف سطر)</label>
+              <textarea className="fld" rows={4} style={{...inp,resize:"vertical"}} value={editing.benefitsText} onChange={e=>setEditing({...editing,benefitsText:e.target.value})} placeholder={"نحاس أصلي 100%\nتوصيل سريع\nضمان الجودة"}/></div>
+            <div style={{marginTop:14}}><label style={lab}>الوصف المفصّل</label>
+              <textarea className="fld" rows={4} style={{...inp,resize:"vertical"}} value={editing.description} onChange={e=>setEditing({...editing,description:e.target.value})}/></div>
+            <div style={{marginTop:14}}><label style={lab}>صور المنتج (المعرض) — الأولى هي الرئيسية</label><ImgRow list={editing.images} keyName="images"/></div>
+            <div style={{marginTop:6}}><label style={lab}>صور التفاصيل (تبان ف الأسفل) — اختياري</label><ImgRow list={editing.long_images} keyName="long_images"/></div>
+            <div style={{display:"grid",gap:14,marginTop:14}} className="g2">
+              <div><label style={lab}>التقييم (0-5)</label><input className="fld" type="number" step="0.1" max="5" style={{...inp,direction:"ltr"}} value={editing.rating} onChange={e=>setEditing({...editing,rating:e.target.value})}/></div>
+              <div><label style={lab}>عدد التقييمات</label><input className="fld" type="number" style={{...inp,direction:"ltr"}} value={editing.reviews} onChange={e=>setEditing({...editing,reviews:e.target.value})}/></div>
+              <div><label style={lab}>عدد المبيعات (للـ "تم بيع X")</label><input className="fld" type="number" style={{...inp,direction:"ltr"}} value={editing.sold} onChange={e=>setEditing({...editing,sold:e.target.value})}/></div>
+            </div>
+            <div style={{display:"flex",gap:10,marginTop:18}}>
+              <button className="btn" onClick={save} style={btn(C.accentGrad)}>حفظ</button>
+              <button className="btn" onClick={()=>setEditing(null)} style={ghost}>إلغاء</button>
+            </div>
+          </div>}
+
+          {products.length===0&&!editing ? <div style={{background:"#fff",border:`1.5px dashed ${C.border}`,borderRadius:18,padding:40,textAlign:"center",color:C.muted}}>لا توجد منتجات بعد. أضف أول منتج.</div>
+          : <div style={{display:"grid",gap:12}}>
+            {products.map(p=><div key={p.id} style={{display:"flex",alignItems:"center",gap:12,background:"#fff",border:`1px solid ${C.border}`,borderRadius:14,padding:12}}>
+              {arr(p.images)[0]?<img src={p.images[0]} alt="" style={{width:60,height:60,objectFit:"cover",borderRadius:10}}/>:<div style={{width:60,height:60,background:C.line,borderRadius:10}}/>}
+              <div style={{flex:1}}><div style={{fontWeight:800}}>{p.name}</div><div style={{color:C.accent,fontWeight:800,fontSize:14}}>{money(p.price)}{p.old_price>p.price?<span style={{color:C.muted,textDecoration:"line-through",fontWeight:500,marginInlineStart:8}}>{money(p.old_price)}</span>:null}</div></div>
+              <button className="btn" onClick={()=>startEdit(p)} style={ghost}>تعديل</button>
+              <button className="btn" onClick={()=>del(p.id)} style={{...ghost,color:C.red,borderColor:"#F0CFCF"}}>حذف</button>
+            </div>)}
+          </div>}
+        </div>
+      ) : (
+        <div style={{maxWidth:1040,margin:"0 auto",padding:"22px 18px"}}>
+          <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:16}}>
+            <h1 style={{fontSize:22,fontWeight:900,margin:0}}>الطلبات</h1>
+            <button className="btn" onClick={refreshAll} style={ghost}>↻ تحديث</button>
+          </div>
+          {orders.length===0 ? <div style={{background:"#fff",border:`1.5px dashed ${C.border}`,borderRadius:18,padding:40,textAlign:"center",color:C.muted}}>لا توجد طلبات بعد.</div>
+          : <div style={{display:"grid",gap:12}}>
+            {orders.map(o=><div key={o.id} style={{background:"#fff",border:`1px solid ${o.status==="new"?C.accent:C.border}`,borderRadius:16,padding:16}}>
+              <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",flexWrap:"wrap",gap:8,marginBottom:10}}>
+                <div style={{display:"flex",alignItems:"center",gap:8}}>
+                  <span style={{fontWeight:900}}>#{String(o.id).slice(-6).toUpperCase()}</span>
+                  {o.status==="new"&&<span style={{background:C.accent,color:"#fff",fontSize:11,fontWeight:800,padding:"2px 9px",borderRadius:20}}>جديد</span>}
+                  <span style={{color:C.muted,fontSize:12}}>{new Date(o.created_at).toLocaleString("ar-MA")}</span>
+                </div>
+                <span style={{fontWeight:900,color:C.accent,fontSize:18}}>{money(o.total)}</span>
+              </div>
+              <div style={{display:"grid",gap:8,fontSize:14,marginBottom:12}} className="g2">
+                <div><span style={{color:C.muted}}>الزبون: </span><b>{o.name}</b></div>
+                <div style={{direction:"ltr",textAlign:"right"}}><span style={{color:C.muted}}>الهاتف: </span><b>{o.phone}</b></div>
+                <div><span style={{color:C.muted}}>المدينة: </span><b>{o.city}</b></div>
+                <div><span style={{color:C.muted}}>العنوان: </span><b>{o.address}</b></div>
+              </div>
+              <div style={{borderTop:`1px solid ${C.line}`,paddingTop:10}}>
+                {arr(o.items).map((it,i)=><div key={i} style={{display:"flex",justifyContent:"space-between",fontSize:14,padding:"3px 0"}}><span>{it.name} <span style={{color:C.muted}}>× {it.qty}</span></span><span style={{fontWeight:700}}>{money(it.price*it.qty)}</span></div>)}
+              </div>
+              <div style={{marginTop:12}}>
+                {o.status==="new"?<button className="btn" onClick={()=>handle(o.id)} style={btn(C.teal,{padding:"8px 14px",fontSize:13})}>وضع كمُعالَج</button>:<span style={{color:C.teal,fontWeight:800,fontSize:14}}>مُعالَج ✓</span>}
+              </div>
+            </div>)}
+          </div>}
+        </div>
+      )}
+    </div>
+  );
+}
+ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
+</script>
+</body>
+</html>
