@@ -20,6 +20,20 @@ body,button,input,textarea{font-family:'Tajawal',system-ui,'Segoe UI',Tahoma,san
 </head>
 <body>
 <div id="root"></div>
+<script>
+window.addEventListener('error', function(e){
+  var r=document.getElementById('root');
+  if(r && !r.innerHTML.trim()){
+    r.innerHTML='<div style="padding:18px;margin:16px;font-family:monospace;direction:ltr;text-align:left;color:#b00020;background:#fff5f5;border:1px solid #f2c9c9;border-radius:12px;white-space:pre-wrap;font-size:13px;line-height:1.6"><b>⚠️ خطأ / Error</b>\n\n'+((e && (e.message||e.error))||'unknown error')+'\n\n'+((e&&e.filename)||'')+' : '+((e&&e.lineno)||'')+'</div>';
+  }
+});
+setTimeout(function(){
+  var r=document.getElementById('root');
+  if(r && !r.innerHTML.trim()){
+    r.innerHTML='<div style="padding:18px;margin:16px;font-family:sans-serif;direction:rtl;color:#33415C;background:#fff;border:1px solid #E1E8F3;border-radius:12px;font-size:14px;line-height:1.9">⏳ الصفحة مازال ماخدماتش. إلا بقيت بيضاء، جرّب متصفح Chrome حديث، تأكد من الأنترنت، وعاود حمّل الصفحة.</div>';
+  }
+}, 6000);
+</script>
 <script type="text/babel" data-presets="react">
 const { useState, useEffect } = React;
 const CFG = window.STORE_CONFIG;
