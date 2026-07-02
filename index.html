@@ -41,6 +41,9 @@ body,button,input,textarea{font-family:'Tajawal',system-ui,'Segoe UI',Tahoma,san
 .langsel{border:1px solid var(--border);background:var(--surface);color:var(--ink);border-radius:11px;padding:8px 10px;font-weight:700;font-size:13px;cursor:pointer;}
 @media(min-width:880px){.lg2{display:grid;grid-template-columns:1fr 1fr;gap:30px;align-items:start;}.sticky-lg{position:sticky;top:86px;}.hide-lg{display:none!important;}}
 @media(max-width:879px){.only-lg{display:none!important;}}
+.wabtn{position:fixed;bottom:86px;inset-inline-end:16px;z-index:60;width:56px;height:56px;border-radius:50%;background:#25D366;color:#fff;border:none;box-shadow:0 10px 26px rgba(37,211,102,.45);font-size:28px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:transform .2s;animation:scaleIn .4s cubic-bezier(.2,.7,.2,1);}
+.wabtn:hover{transform:scale(1.1);}
+@media(min-width:880px){.wabtn{bottom:24px;}}
 </style>
 </head>
 <body>
@@ -54,10 +57,10 @@ var sb=null; if(CONFIGURED && window.supabase){ try{ sb=window.supabase.createCl
 
 /* ===== i18n (UI) ===== */
 var UI = {
-  ar:{dir:"rtl",cur:"د.م.",collection:"تشكيلتنا",title:"منتجات مختارة بعناية",sub:"اطلب بكل سهولة — الدفع عند الاستلام في كل المغرب",orderNow:"اطلب الآن",noProducts:"لا توجد منتجات حالياً.",back:"رجوع للمنتجات",off:"خصم",save:"وفّر",sold:"تم بيع",soldUnit:"قطعة",qty:"الكمية",cod:"اطلب الآن — الدفع عند الاستلام",fastDeliv:"توصيل سريع",cashDeliv:"الدفع عند الاستلام",guarantee:"ضمان الجودة",fill:"عمّر المعلومات",orderInfo:"معلومات الطلب",name:"الاسم الكامل",namePh:"الاسم و النسب",phone:"رقم الهاتف",city:"المدينة",cityPh:"اكتب اسم المدينة…",addr:"العنوان",addrPh:"الحي، الزنقة، رقم المنزل…",deliv:"التوصيل",free:"مجاني",total:"المجموع",confirm:"✅ تأكيد الطلب",codNote:"🔒 الدفع عند الاستلام — بلا خلاص مسبق",details:"تفاصيل المنتج",done:"تم تسجيل طلبك!",thanks:"غادي نتواصلو معاك قريباً لتأكيد الطلب.",cont:"متابعة التسوق",sending:"جاري الإرسال…",rev:"تقييم",errName:"المرجو إدخال الاسم الكامل",errPhone:"رقم هاتف غير صحيح (10 أرقام)",errCity:"المرجو اختيار المدينة من اللائحة",errAddr:"المرجو إدخال العنوان",headFast:"توصيل لكل المغرب",headCod:"الدفع عند الاستلام"},
-  fr:{dir:"ltr",cur:"DH",collection:"Notre collection",title:"Produits sélectionnés avec soin",sub:"Commandez facilement — paiement à la livraison partout au Maroc",orderNow:"Commander",noProducts:"Aucun produit pour le moment.",back:"Retour aux produits",off:"Promo",save:"Économisez",sold:"Déjà vendu",soldUnit:"pièces",qty:"Quantité",cod:"Commander — paiement à la livraison",fastDeliv:"Livraison rapide",cashDeliv:"Paiement à la livraison",guarantee:"Qualité garantie",fill:"Remplissez vos infos",orderInfo:"Informations de commande",name:"Nom complet",namePh:"Prénom et nom",phone:"Téléphone",city:"Ville",cityPh:"Tapez le nom de la ville…",addr:"Adresse",addrPh:"Quartier, rue, numéro…",deliv:"Livraison",free:"Gratuite",total:"Total",confirm:"✅ Confirmer la commande",codNote:"🔒 Paiement à la livraison — sans avance",details:"Détails du produit",done:"Commande enregistrée !",thanks:"Nous vous contacterons bientôt pour confirmer.",cont:"Continuer les achats",sending:"Envoi…",rev:"avis",errName:"Veuillez saisir le nom complet",errPhone:"Numéro invalide (10 chiffres)",errCity:"Veuillez choisir une ville dans la liste",errAddr:"Veuillez saisir l'adresse",headFast:"Livraison partout au Maroc",headCod:"Paiement à la livraison"},
-  en:{dir:"ltr",cur:"DH",collection:"Our collection",title:"Carefully selected products",sub:"Order easily — cash on delivery across Morocco",orderNow:"Order now",noProducts:"No products available yet.",back:"Back to products",off:"Off",save:"Save",sold:"Sold",soldUnit:"pcs",qty:"Quantity",cod:"Order now — cash on delivery",fastDeliv:"Fast delivery",cashDeliv:"Cash on delivery",guarantee:"Quality guarantee",fill:"Fill your info",orderInfo:"Order information",name:"Full name",namePh:"First and last name",phone:"Phone",city:"City",cityPh:"Type the city name…",addr:"Address",addrPh:"Neighborhood, street, number…",deliv:"Delivery",free:"Free",total:"Total",confirm:"✅ Confirm order",codNote:"🔒 Cash on delivery — no prepayment",details:"Product details",done:"Order placed!",thanks:"We'll contact you soon to confirm.",cont:"Continue shopping",sending:"Sending…",rev:"reviews",errName:"Please enter your full name",errPhone:"Invalid number (10 digits)",errCity:"Please choose a city from the list",errAddr:"Please enter the address",headFast:"Delivery across Morocco",headCod:"Cash on delivery"},
-  es:{dir:"ltr",cur:"DH",collection:"Nuestra colección",title:"Productos seleccionados con cuidado",sub:"Pide fácilmente — pago contra entrega en todo Marruecos",orderNow:"Pedir ahora",noProducts:"No hay productos por el momento.",back:"Volver a los productos",off:"Dto.",save:"Ahorra",sold:"Vendido",soldUnit:"uds",qty:"Cantidad",cod:"Pedir — pago contra entrega",fastDeliv:"Entrega rápida",cashDeliv:"Pago contra entrega",guarantee:"Calidad garantizada",fill:"Rellena tus datos",orderInfo:"Información del pedido",name:"Nombre completo",namePh:"Nombre y apellido",phone:"Teléfono",city:"Ciudad",cityPh:"Escribe el nombre de la ciudad…",addr:"Dirección",addrPh:"Barrio, calle, número…",deliv:"Envío",free:"Gratis",total:"Total",confirm:"✅ Confirmar pedido",codNote:"🔒 Pago contra entrega — sin adelanto",details:"Detalles del producto",done:"¡Pedido registrado!",thanks:"Le contactaremos pronto para confirmar.",cont:"Seguir comprando",sending:"Enviando…",rev:"reseñas",errName:"Introduce el nombre completo",errPhone:"Número inválido (10 dígitos)",errCity:"Elige una ciudad de la lista",errAddr:"Introduce la dirección",headFast:"Envío por todo Marruecos",headCod:"Pago contra entrega"}
+  ar:{dir:"rtl",cur:"د.م.",collection:"تشكيلتنا",title:"منتجات مختارة بعناية",sub:"اطلب بكل سهولة — الدفع عند الاستلام في كل المغرب",orderNow:"اطلب الآن",noProducts:"لا توجد منتجات حالياً.",back:"رجوع للمنتجات",off:"خصم",save:"وفّر",sold:"تم بيع",soldUnit:"قطعة",qty:"الكمية",cod:"اطلب الآن — الدفع عند الاستلام",fastDeliv:"توصيل سريع",cashDeliv:"الدفع عند الاستلام",guarantee:"ضمان الجودة",fill:"عمّر المعلومات",orderInfo:"معلومات الطلب",name:"الاسم الكامل",namePh:"الاسم و النسب",phone:"رقم الهاتف",city:"المدينة",cityPh:"اكتب اسم المدينة…",addr:"العنوان",addrPh:"الحي، الزنقة، رقم المنزل…",deliv:"التوصيل",free:"مجاني",total:"المجموع",confirm:"✅ تأكيد الطلب",codNote:"🔒 الدفع عند الاستلام — بلا خلاص مسبق",details:"تفاصيل المنتج",done:"تم تسجيل طلبك!",thanks:"غادي نتواصلو معاك قريباً لتأكيد الطلب.",cont:"متابعة التسوق",sending:"جاري الإرسال…",rev:"تقييم",errName:"المرجو إدخال الاسم الكامل",errPhone:"رقم هاتف غير صحيح (10 أرقام)",errCity:"المرجو اختيار المدينة من اللائحة",errAddr:"المرجو إدخال العنوان",headFast:"توصيل لكل المغرب",headCod:"الدفع عند الاستلام",bundleTitle:"🎁 عروض خاصة",bundle1:"قطعة واحدة",bundlePick:"اختر",unitShort:"قطع",coupon:"كود التخفيض (اختياري)",couponPh:"PROMO10",couponApply:"تطبيق",couponOk:"تم تطبيق الكوبون ✓",couponBad:"كود غير صالح",discount:"التخفيض"},
+  fr:{dir:"ltr",cur:"DH",collection:"Notre collection",title:"Produits sélectionnés avec soin",sub:"Commandez facilement — paiement à la livraison partout au Maroc",orderNow:"Commander",noProducts:"Aucun produit pour le moment.",back:"Retour aux produits",off:"Promo",save:"Économisez",sold:"Déjà vendu",soldUnit:"pièces",qty:"Quantité",cod:"Commander — paiement à la livraison",fastDeliv:"Livraison rapide",cashDeliv:"Paiement à la livraison",guarantee:"Qualité garantie",fill:"Remplissez vos infos",orderInfo:"Informations de commande",name:"Nom complet",namePh:"Prénom et nom",phone:"Téléphone",city:"Ville",cityPh:"Tapez le nom de la ville…",addr:"Adresse",addrPh:"Quartier, rue, numéro…",deliv:"Livraison",free:"Gratuite",total:"Total",confirm:"✅ Confirmer la commande",codNote:"🔒 Paiement à la livraison — sans avance",details:"Détails du produit",done:"Commande enregistrée !",thanks:"Nous vous contacterons bientôt pour confirmer.",cont:"Continuer les achats",sending:"Envoi…",rev:"avis",errName:"Veuillez saisir le nom complet",errPhone:"Numéro invalide (10 chiffres)",errCity:"Veuillez choisir une ville dans la liste",errAddr:"Veuillez saisir l'adresse",headFast:"Livraison partout au Maroc",headCod:"Paiement à la livraison",bundleTitle:"🎁 Offres spéciales",bundle1:"1 pièce",bundlePick:"Choisir",unitShort:"pcs",coupon:"Code promo (optionnel)",couponPh:"PROMO10",couponApply:"Appliquer",couponOk:"Code appliqué ✓",couponBad:"Code invalide",discount:"Remise"},
+  en:{dir:"ltr",cur:"DH",collection:"Our collection",title:"Carefully selected products",sub:"Order easily — cash on delivery across Morocco",orderNow:"Order now",noProducts:"No products available yet.",back:"Back to products",off:"Off",save:"Save",sold:"Sold",soldUnit:"pcs",qty:"Quantity",cod:"Order now — cash on delivery",fastDeliv:"Fast delivery",cashDeliv:"Cash on delivery",guarantee:"Quality guarantee",fill:"Fill your info",orderInfo:"Order information",name:"Full name",namePh:"First and last name",phone:"Phone",city:"City",cityPh:"Type the city name…",addr:"Address",addrPh:"Neighborhood, street, number…",deliv:"Delivery",free:"Free",total:"Total",confirm:"✅ Confirm order",codNote:"🔒 Cash on delivery — no prepayment",details:"Product details",done:"Order placed!",thanks:"We'll contact you soon to confirm.",cont:"Continue shopping",sending:"Sending…",rev:"reviews",errName:"Please enter your full name",errPhone:"Invalid number (10 digits)",errCity:"Please choose a city from the list",errAddr:"Please enter the address",headFast:"Delivery across Morocco",headCod:"Cash on delivery",bundleTitle:"🎁 Special offers",bundle1:"1 piece",bundlePick:"Choose",unitShort:"pcs",coupon:"Promo code (optional)",couponPh:"PROMO10",couponApply:"Apply",couponOk:"Code applied ✓",couponBad:"Invalid code",discount:"Discount"},
+  es:{dir:"ltr",cur:"DH",collection:"Nuestra colección",title:"Productos seleccionados con cuidado",sub:"Pide fácilmente — pago contra entrega en todo Marruecos",orderNow:"Pedir ahora",noProducts:"No hay productos por el momento.",back:"Volver a los productos",off:"Dto.",save:"Ahorra",sold:"Vendido",soldUnit:"uds",qty:"Cantidad",cod:"Pedir — pago contra entrega",fastDeliv:"Entrega rápida",cashDeliv:"Pago contra entrega",guarantee:"Calidad garantizada",fill:"Rellena tus datos",orderInfo:"Información del pedido",name:"Nombre completo",namePh:"Nombre y apellido",phone:"Teléfono",city:"Ciudad",cityPh:"Escribe el nombre de la ciudad…",addr:"Dirección",addrPh:"Barrio, calle, número…",deliv:"Envío",free:"Gratis",total:"Total",confirm:"✅ Confirmar pedido",codNote:"🔒 Pago contra entrega — sin adelanto",details:"Detalles del producto",done:"¡Pedido registrado!",thanks:"Le contactaremos pronto para confirmar.",cont:"Seguir comprando",sending:"Enviando…",rev:"reseñas",errName:"Introduce el nombre completo",errPhone:"Número inválido (10 dígitos)",errCity:"Elige una ciudad de la lista",errAddr:"Introduce la dirección",headFast:"Envío por todo Marruecos",headCod:"Pago contra entrega",bundleTitle:"🎁 Ofertas especiales",bundle1:"1 pieza",bundlePick:"Elegir",unitShort:"uds",coupon:"Código promo (opcional)",couponPh:"PROMO10",couponApply:"Aplicar",couponOk:"Código aplicado ✓",couponBad:"Código inválido",discount:"Descuento"}
 };
 var LANGS=[["ar","ع"],["fr","FR"],["en","EN"],["es","ES"]];
 var CITIES=[{ar:"الدار البيضاء",fr:"Casablanca"},{ar:"الرباط",fr:"Rabat"},{ar:"فاس",fr:"Fès"},{ar:"مراكش",fr:"Marrakech"},{ar:"طنجة",fr:"Tanger"},{ar:"مكناس",fr:"Meknès"},{ar:"أكادير",fr:"Agadir"},{ar:"وجدة",fr:"Oujda"},{ar:"القنيطرة",fr:"Kénitra"},{ar:"تطوان",fr:"Tétouan"},{ar:"سلا",fr:"Salé"},{ar:"المحمدية",fr:"Mohammedia"},{ar:"الجديدة",fr:"El Jadida"},{ar:"بني ملال",fr:"Béni Mellal"},{ar:"الناظور",fr:"Nador"},{ar:"تازة",fr:"Taza"},{ar:"سطات",fr:"Settat"},{ar:"خريبكة",fr:"Khouribga"},{ar:"العرائش",fr:"Larache"},{ar:"برشيد",fr:"Berrechid"},{ar:"خنيفرة",fr:"Khénifra"},{ar:"الرشيدية",fr:"Errachidia"},{ar:"ورزازات",fr:"Ouarzazate"},{ar:"الصويرة",fr:"Essaouira"},{ar:"آسفي",fr:"Safi"},{ar:"تمارة",fr:"Témara"},{ar:"تارودانت",fr:"Taroudant"},{ar:"الحسيمة",fr:"Al Hoceïma"},{ar:"شفشاون",fr:"Chefchaouen"},{ar:"العيون",fr:"Laâyoune"},{ar:"الداخلة",fr:"Dakhla"},{ar:"تيزنيت",fr:"Tiznit"},{ar:"برکان",fr:"Berkane"},{ar:"وزان",fr:"Ouazzane"},{ar:"مرتيل",fr:"Martil"},{ar:"الفنيدق",fr:"Fnideq"}];
@@ -75,20 +78,80 @@ function pick(o){ if(!o) return ""; if(typeof o==="string") return o; return o[L
 function pickArr(o){ if(!o) return []; if(Array.isArray(o)) return o; var v=o[LANG]||o.ar||o.fr||o.en||o.es; return arr(v); }
 function cityName(c){ return LANG==="ar"?c.ar:c.fr; }
 
+/* ===== 🎁 Bundles & 🎟️ Coupon pricing ===== */
+function currentSubtotal(){
+  var p=STATE.product; if(!p) return 0;
+  if(STATE.bundle!==null && p.bundles[STATE.bundle]) return Number(p.bundles[STATE.bundle].price)||0;
+  return p.price*STATE.qty;
+}
+function currentQty(){
+  var p=STATE.product; if(!p) return STATE.qty;
+  if(STATE.bundle!==null && p.bundles[STATE.bundle]) return Number(p.bundles[STATE.bundle].qty)||1;
+  return STATE.qty;
+}
+function couponDiscount(sub){
+  var c=STATE.coupon; if(!c) return 0;
+  var d = c.type==="percent" ? sub*(Number(c.value)||0)/100 : (Number(c.value)||0);
+  return Math.min(Math.round(d), sub);
+}
+function currentTotal(){ var sub=currentSubtotal(); return sub - couponDiscount(sub); }
+
 function norm(p){
   var tr=p.tr||{};
   return { id:p.id, price:Number(p.price)||0, oldPrice:Number(p.old_price)||0,
     images:arr(p.images), long_images:arr(p.long_images),
-    rating:Number(p.rating)||5, reviews:Number(p.reviews)||0, sold:Number(p.sold)||0,
+    rating:Number(p.rating)||5, reviews:Number(p.reviews)||0, sold:Number(p.sold)||0, bundles:arr(p.bundles).filter(function(b){return b&&Number(b.qty)>=2&&Number(b.price)>0;}).sort(function(a,b){return a.qty-b.qty;}),
     trName: tr.name || (p.name?{ar:p.name}:{}), trTag: tr.tagline || (p.tagline?{ar:p.tagline}:{}),
     trDesc: tr.description || (p.description?{ar:p.description}:{}), trBen: tr.benefits || (arr(p.benefits).length?{ar:arr(p.benefits)}:{}) };
 }
-var STATE={products:[],product:null,main:0,qty:1,city:"",errors:{},cityOpen:false,fname:"",fphone:"",faddr:""};
+var STATE={products:[],product:null,main:0,qty:1,bundle:null,city:"",errors:{},cityOpen:false,fname:"",fphone:"",faddr:"",coupon:null,couponMsg:"",couponInput:""};
 
 function applyDoc(){ document.documentElement.dir=t().dir; document.documentElement.lang=LANG; document.documentElement.setAttribute("data-theme",THEME==="dark"?"dark":"light"); }
 
 function loadProducts(cb){ sb.from("products").select("*").order("created_at",{ascending:false}).then(function(r){ if(r.error){console.error(r.error);cb([]);return;} cb((r.data||[]).map(norm)); }); }
 function insertOrder(o,cb,err){ sb.from("orders").insert(o).then(function(r){ if(r.error) err(r.error); else cb(); }); }
+
+/* ===== 💬 WhatsApp ===== */
+var WA_MSG={ar:"سلام، بغيت نسول على: ",fr:"Bonjour, je veux me renseigner sur : ",en:"Hello, I want to ask about: ",es:"Hola, quiero preguntar sobre: "};
+function waLink(text){ return "https://wa.me/"+CFG.WHATSAPP+"?text="+encodeURIComponent(text); }
+function waButtonHTML(){
+  if(!CFG.WHATSAPP) return "";
+  var msg=WA_MSG[LANG]||WA_MSG.ar;
+  var pn=STATE.product?pick(STATE.product.trName):"";
+  var txt=msg+(pn?pn:BRAND);
+  return '<a class="wabtn" href="'+waLink(txt)+'" target="_blank" rel="noopener" title="WhatsApp"><svg width="30" height="30" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.52.149-.174.198-.298.297-.497.1-.198.05-.371-.025-.52-.074-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg></a>';
+}
+
+/* ===== 🔔 Order notification (webhook) ===== */
+function notifyOrder(order){
+  if(!CFG.ORDER_WEBHOOK) return;
+  try{ fetch(CFG.ORDER_WEBHOOK,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(order)}).catch(function(){}); }catch(e){}
+}
+
+/* ===== 📊 Pixels ===== */
+function initPixels(){
+  try{
+    if(CFG.TIKTOK_PIXEL_ID){
+      !function (w, d, t) { w.TiktokAnalyticsObject=t;var ttq=w[t]=w[t]||[];ttq.methods=["page","track","identify","instances","debug","on","off","once","ready","alias","group","enableCookie","disableCookie"],ttq.setAndDefer=function(t,e){t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}};for(var i=0;i<ttq.methods.length;i++)ttq.setAndDefer(ttq,ttq.methods[i]);ttq.instance=function(t){for(var e=ttq._i[t]||[],n=0;n<ttq.methods.length;n++)ttq.setAndDefer(e,ttq.methods[n]);return e},ttq.load=function(e,n){var i="https://analytics.tiktok.com/i18n/pixel/events.js";ttq._i=ttq._i||{},ttq._i[e]=[],ttq._i[e]._u=i,ttq._t=ttq._t||{},ttq._t[e]=+new Date,ttq._o=ttq._o||{},ttq._o[e]=n||{};var o=document.createElement("script");o.type="text/javascript",o.async=!0,o.src=i+"?sdkid="+e+"&lib="+t;var a=document.getElementsByTagName("script")[0];a.parentNode.insertBefore(o,a)};ttq.load(CFG.TIKTOK_PIXEL_ID);ttq.page(); }(window, document, 'ttq');
+    }
+    if(CFG.FACEBOOK_PIXEL_ID){
+      !function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');
+      window.fbq('init', CFG.FACEBOOK_PIXEL_ID); window.fbq('track','PageView');
+    }
+  }catch(e){ console.error(e); }
+}
+function trackViewContent(p,nm){
+  try{
+    if(CFG.TIKTOK_PIXEL_ID&&window.ttq) window.ttq.track("ViewContent",{content_id:String(p.id),content_name:nm,value:p.price,currency:"MAD"});
+    if(CFG.FACEBOOK_PIXEL_ID&&window.fbq) window.fbq("track","ViewContent",{content_ids:[String(p.id)],content_name:nm,value:p.price,currency:"MAD"});
+  }catch(e){}
+}
+function trackPurchase(p,nm,qty,total){
+  try{
+    if(CFG.TIKTOK_PIXEL_ID&&window.ttq) window.ttq.track("CompletePayment",{content_id:String(p.id),content_name:nm,quantity:qty,value:total,currency:"MAD"});
+    if(CFG.FACEBOOK_PIXEL_ID&&window.fbq) window.fbq("track","Purchase",{content_ids:[String(p.id)],content_name:nm,num_items:qty,value:total,currency:"MAD"});
+  }catch(e){}
+}
 
 function applyReveals(){ var els=document.querySelectorAll(".reveal:not(.in)"); if(!("IntersectionObserver" in window)){els.forEach(function(e){e.classList.add("in");});return;} var ob=new IntersectionObserver(function(l){l.forEach(function(en){if(en.isIntersecting){en.target.classList.add("in");ob.unobserve(en.target);}});},{threshold:.12}); els.forEach(function(e){ob.observe(e);}); }
 
@@ -123,13 +186,13 @@ function renderHome(){
     });
     h+='</div>';
   }
-  h+='</div>'+footerHTML(); el("app").innerHTML=h; applyReveals();
+  h+='</div>'+footerHTML()+waButtonHTML(); el("app").innerHTML=h; applyReveals();
 }
 
 function renderLanding(){
   var p=STATE.product; if(!p){renderHome();return;}
   var nm=pick(p.trName),tag=pick(p.trTag),desc=pick(p.trDesc),bens=pickArr(p.trBen);
-  var off=p.oldPrice>p.price?Math.round((1-p.price/p.oldPrice)*100):0, total=p.price*STATE.qty, e=STATE.errors;
+  var off=p.oldPrice>p.price?Math.round((1-p.price/p.oldPrice)*100):0, sub=currentSubtotal(), disc=couponDiscount(sub), total=sub-disc, e=STATE.errors;
   var thumbs=""; if(p.images.length>1){thumbs='<div style="display:flex;gap:11px;margin-top:13px;flex-wrap:wrap">'+p.images.map(function(s,i){return '<img class="thumb" onclick="App.setMain('+i+')" src="'+esc(s)+'" style="width:80px;height:80px;object-fit:cover;border-radius:14px;cursor:pointer;border:'+(i===STATE.main?"2.5px solid var(--accent)":"1.5px solid var(--border)")+'">';}).join("")+'</div>';}
   var benefits=""; if(bens.length){benefits='<ul class="reveal" style="list-style:none;padding:0;margin:0 0 22px;display:grid;gap:11px">'+bens.map(function(b){return '<li style="display:flex;align-items:flex-start;gap:11px;font-size:15.5px"><span style="width:22px;height:22px;border-radius:50%;background:var(--blueBg);color:var(--accent);display:inline-flex;align-items:center;justify-content:center;font-weight:900;font-size:12px;flex-shrink:0;margin-top:1px">✓</span><span style="color:var(--sub)">'+esc(b)+'</span></li>';}).join("")+'</ul>';}
 
@@ -141,7 +204,11 @@ function renderLanding(){
         '<h1 style="font-size:30px;font-weight:900;margin:0 0 6px;line-height:1.25">'+esc(nm)+'</h1>'+(tag?'<p style="color:var(--muted);font-size:16px;margin:0 0 12px">'+esc(tag)+'</p>':'')+starsHTML(p.rating,p.reviews,false)+'</div>'+
         '<div class="reveal" style="display:flex;align-items:baseline;gap:12px;margin:18px 0"><span style="font-size:36px;font-weight:900">'+money(p.price)+'</span>'+(off>0?'<span style="color:var(--muted);text-decoration:line-through;font-size:18px">'+money(p.oldPrice)+'</span><span style="background:var(--blueBg);color:var(--accent);font-weight:800;font-size:13px;padding:4px 11px;border-radius:9px">'+t().save+' '+off+'%</span>':'')+'</div>'+
         benefits+
-        '<div class="reveal" style="display:flex;align-items:center;gap:14px;margin-bottom:16px"><span style="font-weight:700;color:var(--sub)">'+t().qty+'</span><div style="display:flex;align-items:center;border:1.5px solid var(--border);border-radius:14px;overflow:hidden;background:var(--surface)"><button class="btn" onclick="App.qty(-1)" style="border:none;background:var(--surface);color:var(--ink);width:44px;height:46px;font-size:22px">−</button><span style="width:48px;text-align:center;font-weight:900;font-size:18px">'+STATE.qty+'</span><button class="btn" onclick="App.qty(1)" style="border:none;background:var(--surface);color:var(--ink);width:44px;height:46px;font-size:22px">+</button></div></div>'+
+        (p.bundles.length?('<div class="reveal" style="margin-bottom:16px"><div style="font-weight:800;margin-bottom:9px;color:var(--sub)">'+t().bundleTitle+'</div><div style="display:grid;gap:9px">'+
+          '<div onclick="App.pickBundle(null)" style="display:flex;justify-content:space-between;align-items:center;border:2px solid '+(STATE.bundle===null?"var(--accent)":"var(--border)")+';background:'+(STATE.bundle===null?"var(--blueBg)":"var(--surface)")+';border-radius:14px;padding:12px 15px;cursor:pointer"><span style="font-weight:700">'+t().bundle1+'</span><b>'+money(p.price)+'</b></div>'+
+          p.bundles.map(function(b,i){var unit=Math.round(b.price/b.qty);var pct=p.price>0?Math.round((1-unit/p.price)*100):0;return '<div onclick="App.pickBundle('+i+')" style="display:flex;justify-content:space-between;align-items:center;border:2px solid '+(STATE.bundle===i?"var(--accent)":"var(--border)")+';background:'+(STATE.bundle===i?"var(--blueBg)":"var(--surface)")+';border-radius:14px;padding:12px 15px;cursor:pointer"><span style="font-weight:700">'+b.qty+' '+t().unitShort+(pct>0?' <span style="background:var(--tealBg);color:var(--teal);font-size:11px;font-weight:800;border-radius:20px;padding:2px 8px">-'+pct+'%</span>':'')+'</span><b>'+money(b.price)+'</b></div>';}).join("")+
+        '</div></div>'):"")+
+        (STATE.bundle===null?'<div class="reveal" style="display:flex;align-items:center;gap:14px;margin-bottom:16px"><span style="font-weight:700;color:var(--sub)">'+t().qty+'</span><div style="display:flex;align-items:center;border:1.5px solid var(--border);border-radius:14px;overflow:hidden;background:var(--surface)"><button class="btn" onclick="App.qty(-1)" style="border:none;background:var(--surface);color:var(--ink);width:44px;height:46px;font-size:22px">−</button><span style="width:48px;text-align:center;font-weight:900;font-size:18px">'+STATE.qty+'</span><button class="btn" onclick="App.qty(1)" style="border:none;background:var(--surface);color:var(--ink);width:44px;height:46px;font-size:22px">+</button></div></div>:"")+
         '<div class="reveal"><button class="btn shine" onclick="App.scrollForm()" style="width:100%;background:linear-gradient(135deg,#3B82F6,#1D4ED8);color:#fff;border:none;border-radius:16px;padding:17px;font-weight:900;font-size:18px;box-shadow:0 12px 28px rgba(37,99,235,.35)">🛒 '+t().cod+'</button>'+
         '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-top:16px">'+
           '<div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:13px 6px;text-align:center"><div style="font-size:22px">🚚</div><div style="font-size:11.5px;font-weight:700;color:var(--sub);margin-top:5px">'+t().fastDeliv+'</div></div>'+
@@ -155,17 +222,17 @@ function renderLanding(){
       '<div style="margin-bottom:15px"><label class="lab">'+t().phone+' *</label><input id="f_phone" class="fld'+(e.phone?" err":"")+'" style="direction:ltr;text-align:'+(t().dir==="rtl"?"right":"left")+'" inputmode="tel" placeholder="06xxxxxxxx" value="'+esc(STATE.fphone)+'">'+(e.phone?'<p class="errmsg">'+t().errPhone+'</p>':'')+'</div>'+
       '<div style="margin-bottom:15px;position:relative"><label class="lab">'+t().city+' *</label><input id="f_city" class="fld'+(e.city?" err":"")+'" placeholder="'+t().cityPh+'" value="'+esc(STATE.city)+'" oninput="App.cityInput(this.value)" onfocus="App.cityOpen=true;App.renderCityDD()" autocomplete="off"><div id="city_dd" style="position:absolute;top:100%;inset-inline-start:0;inset-inline-end:0;z-index:20;margin-top:5px;background:var(--surface);border:1px solid var(--border);border-radius:14px;box-shadow:0 16px 36px var(--shadow);max-height:220px;overflow-y:auto;padding:5px;display:none"></div>'+(e.city?'<p class="errmsg">'+t().errCity+'</p>':'')+'</div>'+
       '<div style="margin-bottom:20px"><label class="lab">'+t().addr+' *</label><textarea id="f_addr" class="fld'+(e.addr?" err":"")+'" rows="2" style="resize:vertical" placeholder="'+t().addrPh+'">'+esc(STATE.faddr)+'</textarea>'+(e.addr?'<p class="errmsg">'+t().errAddr+'</p>':'')+'</div>'+
-      '<div style="background:var(--soft);border-radius:15px;padding:16px;margin-bottom:18px"><div style="display:flex;justify-content:space-between;font-size:14.5px;margin-bottom:7px"><span style="color:var(--muted)">'+esc(nm)+' × '+STATE.qty+'</span><span style="font-weight:700">'+money(total)+'</span></div><div style="display:flex;justify-content:space-between;font-size:14.5px;margin-bottom:9px"><span style="color:var(--muted)">'+t().deliv+'</span><span style="color:var(--teal);font-weight:700">'+t().free+'</span></div><div style="display:flex;justify-content:space-between;border-top:1px dashed var(--border);padding-top:10px"><span style="font-weight:900;font-size:17px">'+t().total+'</span><span style="font-weight:900;font-size:21px;color:var(--accent)">'+money(total)+'</span></div></div>'+
+      '<div style="margin-bottom:15px"><label class="lab">'+t().coupon+'</label><div style="display:flex;gap:8px"><input id="f_coupon" class="fld" style="direction:ltr;text-transform:uppercase;flex:1" placeholder="'+t().couponPh+'" value="'+esc(STATE.couponInput)+'"><button type="button" class="btn" onclick="App.applyCoupon()" style="background:var(--ink);color:var(--bg);border:none;border-radius:12px;padding:0 18px;font-weight:800">'+t().couponApply+'</button></div>'+(STATE.couponMsg?'<p style="font-size:13px;margin:6px 0 0;color:'+(STATE.coupon?"var(--teal)":"var(--red)")+'">'+STATE.couponMsg+'</p>':'')+'</div>'+'<div style="background:var(--soft);border-radius:15px;padding:16px;margin-bottom:18px"><div style="display:flex;justify-content:space-between;font-size:14.5px;margin-bottom:7px"><span style="color:var(--muted)">'+esc(nm)+' × '+currentQty()+'</span><span style="font-weight:700">'+money(sub)+'</span></div>(disc>0?'<div style="display:flex;justify-content:space-between;font-size:14.5px;margin-bottom:7px"><span style="color:var(--muted)">🎟️ '+t().discount+'</span><span style="color:var(--teal);font-weight:800">-'+money(disc)+'</span></div>':'')+<div style="display:flex;justify-content:space-between;font-size:14.5px;margin-bottom:9px"><span style="color:var(--muted)">'+t().deliv+'</span><span style="color:var(--teal);font-weight:700">'+t().free+'</span></div><div style="display:flex;justify-content:space-between;border-top:1px dashed var(--border);padding-top:10px"><span style="font-weight:900;font-size:17px">'+t().total+'</span><span style="font-weight:900;font-size:21px;color:var(--accent)">'+money(total)+'</span></div></div>'+
       '<button id="submitbtn" class="btn shine" onclick="App.submit()" style="width:100%;background:linear-gradient(135deg,#14B8A6,#0E9488);color:#fff;border:none;border-radius:16px;padding:17px;font-weight:900;font-size:18px;box-shadow:0 12px 26px rgba(14,165,160,.32)">'+t().confirm+'</button>'+
       '<p style="text-align:center;color:var(--muted);font-size:12.5px;margin-top:11px">'+t().codNote+'</p>'+
     '</div>';
   if(desc){ h+='<div style="max-width:840px;margin:46px auto 0"><div class="reveal"><h2 style="font-size:23px;font-weight:900;margin-bottom:14px;border-inline-start:4px solid var(--accent);padding-inline-start:13px">'+t().details+'</h2><p style="color:var(--sub);line-height:2;white-space:pre-wrap;font-size:16.5px">'+esc(desc)+'</p></div>'; p.long_images.forEach(function(s){h+='<div class="zoom reveal" style="border-radius:18px;margin-top:18px;border:1px solid var(--border)"><img src="'+esc(s)+'" style="width:100%"></div>';}); h+='</div>'; }
   h+='<div class="mobilebar hide-lg" style="position:fixed;inset-inline:0;bottom:0;z-index:50;background:color-mix(in srgb,var(--surface) 94%,transparent);backdrop-filter:blur(10px);border-top:1px solid var(--border);padding:10px 16px;display:flex;align-items:center;gap:12px"><div style="flex:1"><div style="font-weight:900;font-size:18px;color:var(--accent);line-height:1">'+money(p.price)+'</div>'+(off>0?'<div style="color:var(--muted);text-decoration:line-through;font-size:12px">'+money(p.oldPrice)+'</div>':'')+'</div><button class="btn shine" onclick="App.scrollForm()" style="background:linear-gradient(135deg,#3B82F6,#1D4ED8);color:#fff;border:none;border-radius:13px;padding:13px 22px;font-weight:900;font-size:15.5px">'+t().orderNow+'</button></div>';
-  h+='</div>'+footerHTML(); el("app").innerHTML=h; applyReveals(); App.cityOpen=false;
+  h+='</div>'+footerHTML()+waButtonHTML(); el("app").innerHTML=h; applyReveals(); App.cityOpen=false;
 }
 
-function renderDone(){ var p=STATE.product,total=p.price*STATE.qty,nm=pick(p.trName);
-  el("app").innerHTML=headerHTML()+'<div style="max-width:560px;margin:0 auto;padding:64px 18px;text-align:center"><div style="width:88px;height:88px;border-radius:50%;background:linear-gradient(135deg,#14B8A6,#0E9488);color:#fff;display:inline-flex;align-items:center;justify-content:center;font-size:46px;margin-bottom:20px;animation:scaleIn .5s cubic-bezier(.2,.7,.2,1);box-shadow:0 12px 30px rgba(14,165,160,.4)">✓</div><h1 style="font-size:27px;font-weight:900">'+t().done+'</h1><p style="color:var(--muted);font-size:16px;margin:10px 0 6px">'+t().thanks+'</p><p style="font-weight:800;font-size:17px">'+esc(nm)+' × '+STATE.qty+' — '+money(total)+'</p><button class="btn" onclick="App.home()" style="margin-top:24px;background:var(--ink);color:var(--bg);border:none;border-radius:14px;padding:13px 26px;font-weight:800">'+t().cont+'</button></div>'+footerHTML(); }
+function renderDone(){ var p=STATE.product,qtyF=currentQty(),sub=currentSubtotal(),disc=couponDiscount(sub),total=sub-disc,nm=pick(p.trName);
+  el("app").innerHTML=headerHTML()+'<div style="max-width:560px;margin:0 auto;padding:64px 18px;text-align:center"><div style="width:88px;height:88px;border-radius:50%;background:linear-gradient(135deg,#14B8A6,#0E9488);color:#fff;display:inline-flex;align-items:center;justify-content:center;font-size:46px;margin-bottom:20px;animation:scaleIn .5s cubic-bezier(.2,.7,.2,1);box-shadow:0 12px 30px rgba(14,165,160,.4)">✓</div><h1 style="font-size:27px;font-weight:900">'+t().done+'</h1><p style="color:var(--muted);font-size:16px;margin:10px 0 6px">'+t().thanks+'</p><p style="font-weight:800;font-size:17px">'+esc(nm)+' × '+currentQty()+' — '+money(total)+'</p><button class="btn" onclick="App.home()" style="margin-top:24px;background:var(--ink);color:var(--bg);border:none;border-radius:14px;padding:13px 26px;font-weight:800">'+t().cont+'</button></div>'+footerHTML(); }
 
 function renderSetup(){ el("app").innerHTML='<div style="min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px"><div style="max-width:470px;background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:30px;text-align:center;box-shadow:0 16px 40px var(--shadow)"><div style="font-size:46px">⚙️</div><h1 style="font-size:21px;font-weight:900;margin:12px 0 8px">الموقع مازال غير مربوط</h1><p style="color:var(--sub);line-height:1.9;font-size:15px;margin:0">عمّر مفاتيح Supabase ف config.js.</p></div></div>'; }
 
@@ -174,11 +241,14 @@ var App={
   toggleTheme:function(){ THEME=(THEME==="dark"?"light":"dark"); localStorage.setItem("theme",THEME); applyDoc(); this._rerender(); },
   _rerender:function(){ if(STATE.product) renderLanding(); else renderHome(); },
   home:function(){ STATE.product=null;STATE.errors={};window.scrollTo(0,0);renderHome(); },
-  open:function(id){ STATE.product=STATE.products.find(function(p){return p.id===id;});STATE.main=0;STATE.qty=1;STATE.city="";STATE.errors={};STATE.fname="";STATE.fphone="";STATE.faddr="";window.scrollTo(0,0);renderLanding(); },
+  open:function(id){ STATE.product=STATE.products.find(function(p){return p.id===id;});STATE.main=0;STATE.qty=1;STATE.city="";STATE.errors={};STATE.fname="";STATE.fphone="";STATE.faddr="";STATE.bundle=null;STATE.coupon=null;STATE.couponMsg="";STATE.couponInput="";window.scrollTo(0,0);renderLanding(); if(STATE.product) trackViewContent(STATE.product,pick(STATE.product.trName)); },
   setMain:function(i){ STATE.main=i;var img=el("mainimg");if(img){img.style.opacity="0";setTimeout(function(){img.src=STATE.product.images[i];img.style.opacity="1";},160);}document.querySelectorAll(".thumb").forEach(function(t2,idx){t2.style.border=idx===i?"2.5px solid var(--accent)":"1.5px solid var(--border)";}); },
   qty:function(d){ STATE.qty=Math.max(1,STATE.qty+d);this._cap();renderLanding(); },
+  pickBundle:function(i){ this._cap(); STATE.bundle=i; renderLanding(); },
+  applyCoupon:function(){ this._cap(); var code=(el("f_coupon")?el("f_coupon").value:"").trim().toUpperCase(); STATE.couponInput=code; if(!code){STATE.coupon=null;STATE.couponMsg="";renderLanding();return;}
+    sb.from("coupons").select("*").eq("code",code).eq("active",true).limit(1).then(function(res){ var c=(res.data||[])[0]; if(c){STATE.coupon=c;STATE.couponMsg=t().couponOk;}else{STATE.coupon=null;STATE.couponMsg=t().couponBad;} renderLanding(); App.scrollForm(); }); },
   scrollForm:function(){ var f=el("orderform");if(f)f.scrollIntoView({behavior:"smooth",block:"center"}); },
-  _cap:function(){ if(el("f_name"))STATE.fname=el("f_name").value;if(el("f_phone"))STATE.fphone=el("f_phone").value;if(el("f_addr"))STATE.faddr=el("f_addr").value; },
+  _cap:function(){ if(el("f_name"))STATE.fname=el("f_name").value;if(el("f_phone"))STATE.fphone=el("f_phone").value;if(el("f_addr"))STATE.faddr=el("f_addr").value;if(el("f_coupon"))STATE.couponInput=el("f_coupon").value; },
   cityInput:function(v){ STATE.city=v;this.cityOpen=true;this.renderCityDD(); },
   renderCityDD:function(){ var dd=el("city_dd");if(!dd)return;var q=STATE.city.trim();var m=(q?CITIES.filter(function(c){return c.ar.indexOf(q)>=0||c.fr.toLowerCase().indexOf(q.toLowerCase())>=0;}):CITIES).slice(0,10);if(!this.cityOpen||m.length===0){dd.style.display="none";return;}dd.style.display="block";dd.innerHTML=m.map(function(c){return '<button type="button" class="cityopt" onmousedown="App.pickCity(\''+c.ar+'\')">'+cityName(c)+'</button>';}).join(""); },
   pickCity:function(ar){ var c=CITIES.find(function(x){return x.ar===ar;});STATE.city=c?cityName(c):ar;this.cityOpen=false;var i=el("f_city");if(i)i.value=STATE.city;var dd=el("city_dd");if(dd)dd.style.display="none"; },
@@ -188,15 +258,17 @@ var App={
     if(Object.keys(e).length){renderLanding();this.scrollForm();return;}
     var cobj=CITIES.find(function(c){return c.ar===city||c.fr===city;}); var cityAr=cobj?cobj.ar:city;
     var btn=el("submitbtn");if(btn){btn.textContent=t().sending;btn.style.opacity=".7";}
-    var p=STATE.product,total=p.price*STATE.qty,nm=pick(p.trName);
-    insertOrder({name:name,phone:phone,city:cityAr,address:addr,items:[{id:p.id,name:nm,price:p.price,qty:STATE.qty,image:p.images[0]||""}],total:total,status:"new"},
-      function(){window.scrollTo(0,0);renderDone();},
+    var p=STATE.product,qtyF=currentQty(),sub=currentSubtotal(),disc=couponDiscount(sub),total=sub-disc,nm=pick(p.trName);
+    var unitP=Math.round(sub/qtyF);var orderObj={name:name,phone:phone,city:cityAr,address:addr,items:[{id:p.id,name:nm,price:unitP,qty:qtyF,image:p.images[0]||""}],total:total,status:"new",coupon:STATE.coupon?STATE.coupon.code:"",discount:disc};
+    insertOrder(orderObj,
+      function(){ trackPurchase(p,nm,qtyF,total); notifyOrder({brand:BRAND,name:name,phone:phone,city:cityAr,address:addr,product:nm,qty:qtyF,total:total,coupon:STATE.coupon?STATE.coupon.code:"",date:new Date().toISOString()}); window.scrollTo(0,0);renderDone();},
       function(err){alert("خطأ: "+err.message);if(btn){btn.textContent=t().confirm;btn.style.opacity="1";}}); }
 };
 window.App=App;
 document.addEventListener("click",function(ev){ if(App.cityOpen&&ev.target.id!=="f_city"){App.cityOpen=false;var dd=el("city_dd");if(dd)dd.style.display="none";} });
 
 applyDoc();
+initPixels();
 if(!CONFIGURED||!sb){ renderSetup(); } else { loadProducts(function(list){STATE.products=list;renderHome();}); }
 </script>
 </body>
