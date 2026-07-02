@@ -53,7 +53,19 @@ var STATE={session:null,tab:"dash",products:[],orders:[],coupons:[],editing:null
 function applyTheme(){document.documentElement.setAttribute("data-theme",THEME==="dark"?"dark":"light");}
 
 function loadAll(cb){sb.from("products").select("*").order("created_at",{ascending:false}).then(function(r1){STATE.products=r1.data||[];sb.from("orders").select("*").order("created_at",{ascending:false}).then(function(r2){STATE.orders=r2.data||[];sb.from("coupons").select("*").order("created_at",{ascending:false}).then(function(r3){STATE.coupons=r3.data||[];cb&&cb();});});});}
-function uploadImage(file,cb,err){var ext=(file.name.split(".").pop()||"jpg").toLowerCase();var path=Date.now()+"-"+Math.random().toString(36).slice(2,8)+"."+ext;sb.storage.from("product-images").upload(path,file,{cacheControl:"3600",upsert:false}).then(function(res){if(res.error){err(res.error);return;}cb(sb.storage.from("product-images").getPublicUrl(path).data.publicUrl);});}
+function uploadImage(file,cb,err){
+  if(CFG.IMGBB_KEY){ /* 🖼️ ImgBB: مجاني وبلا حدود bandwidth */
+    var fd=new FormData(); fd.append("image",file);
+    fetch("https://api.imgbb.com/1/upload?key="+encodeURIComponent(CFG.IMGBB_KEY),{method:"POST",body:fd})
+      .then(function(r){return r.json();})
+      .then(function(j){ if(j&&j.success&&j.data&&j.data.url){ cb(j.data.url); } else { err(new Error((j&&j.error&&j.error.message)||"ImgBB upload failed")); } })
+      .catch(function(e){ err(e); });
+    return;
+  }
+  /* fallback: Supabase Storage */
+  var ext=(file.name.split(".").pop()||"jpg").toLowerCase();var path=Date.now()+"-"+Math.random().toString(36).slice(2,8)+"."+ext;
+  sb.storage.from("product-images").upload(path,file,{cacheControl:"3600",upsert:false}).then(function(res){if(res.error){err(res.error);return;}cb(sb.storage.from("product-images").getPublicUrl(path).data.publicUrl);});
+}
 function shortId(id){ return String(id).replace(/-/g,"").slice(0,10); }
 function slugOf(p){ var tr=p.tr||{}; var nm=(tr.name&&(tr.name.ar||tr.name.fr||tr.name.en||tr.name.es))||p.name||""; return encodeURIComponent(String(nm).trim().replace(/\s+/g,"-").replace(/[\/#?&%]/g,"").slice(0,60)); }
 function productLink(p){ var base=(CFG.SITE_URL||"").replace(/\/+$/,""); return (base||location.origin)+"/#p/"+slugOf(p)+"/"+shortId(p.id); }
